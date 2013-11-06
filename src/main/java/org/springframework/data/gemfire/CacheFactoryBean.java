@@ -34,6 +34,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.data.gemfire.support.BeanFactoryDynamicRegionListener;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -209,7 +210,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 			this.poolName = poolName;
 		}
 
-		public void initializeDynamicRegionFactory() {
+		public void initializeDynamicRegionFactory(CacheFactoryBean cacheFactoryBean) {
 			DynamicRegionFactory.Config config = null;
 			if (diskDir == null) {
 				config = new DynamicRegionFactory.Config(null, poolName, persistent, registerInterest);
@@ -217,6 +218,8 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 				config = new DynamicRegionFactory.Config(new File(diskDir), poolName, persistent, registerInterest);
 			}
 			DynamicRegionFactory.get().open(config);
+			DynamicRegionFactory.get().registerDynamicRegionListener(new BeanFactoryDynamicRegionListener(
+				cacheFactoryBean.getBeanFactory()));
 		}
 	}
 
@@ -340,7 +343,7 @@ public class CacheFactoryBean implements BeanNameAware, BeanFactoryAware, BeanCl
 	 */
 	private void initializeDynamicRegionFactory() {
 		if (dynamicRegionSupport != null) {
-			dynamicRegionSupport.initializeDynamicRegionFactory();
+			dynamicRegionSupport.initializeDynamicRegionFactory(this);
 		}
 	}
 

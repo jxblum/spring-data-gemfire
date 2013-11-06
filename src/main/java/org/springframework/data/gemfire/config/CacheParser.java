@@ -129,43 +129,34 @@ class CacheParser extends AbstractSimpleBeanDefinitionParser {
 	}
 
 	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder builder) {
-		Element dynamicRegionFactory = DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
-		if (dynamicRegionFactory != null) {
-			BeanDefinitionBuilder dynamicRegionSupport = buildDynamicRegionSupport(dynamicRegionFactory);
-			postProcessDynamicRegionSupport(element, dynamicRegionSupport);
-			builder.addPropertyValue("dynamicRegionSupport", dynamicRegionSupport.getBeanDefinition());
+		Element dynamicRegionFactoryElement = DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
+
+		if (dynamicRegionFactoryElement != null) {
+			BeanDefinitionBuilder dynamicRegionSupportBuilder = buildDynamicRegionSupport(dynamicRegionFactoryElement);
+			postProcessDynamicRegionSupport(element, dynamicRegionSupportBuilder);
+			builder.addPropertyValue("dynamicRegionSupport", dynamicRegionSupportBuilder.getBeanDefinition());
 		}
 	}
 
 	/**
-	 * @param dynamicRegionSupport BDB for &lt;dynamic-region-factory&gt;
-	 * element
+	 * @param dynamicRegionSupport BDB for &lt;dynamic-region-factory&gt; element.
 	 */
 	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
-
 	}
 
-	private BeanDefinitionBuilder buildDynamicRegionSupport(Element dynamicRegionFactory) {
-		BeanDefinitionBuilder result = null;
-		if (dynamicRegionFactory != null) {
-			BeanDefinitionBuilder dynamicRegionSupport = BeanDefinitionBuilder
-					.genericBeanDefinition(CacheFactoryBean.DynamicRegionSupport.class);
-			String diskDir = dynamicRegionFactory.getAttribute("disk-dir");
-			if (StringUtils.hasText(diskDir)) {
-				dynamicRegionSupport.addPropertyValue("diskDir", diskDir);
-			}
-			String persistent = dynamicRegionFactory.getAttribute("persistent");
-			if (StringUtils.hasText(persistent)) {
-				dynamicRegionSupport.addPropertyValue("persistent", persistent);
-			}
+	private BeanDefinitionBuilder buildDynamicRegionSupport(Element dynamicRegionFactoryElement) {
+		if (dynamicRegionFactoryElement != null) {
+			BeanDefinitionBuilder dynamicRegionSupportBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+				CacheFactoryBean.DynamicRegionSupport.class);
 
-			String registerInterest = dynamicRegionFactory.getAttribute("register-interest");
-			if (StringUtils.hasText(registerInterest)) {
-				dynamicRegionSupport.addPropertyValue("registerInterest", registerInterest);
-			}
-			result = dynamicRegionSupport;
+			ParsingUtils.setPropertyValue(dynamicRegionFactoryElement, dynamicRegionSupportBuilder, "disk-dir");
+			ParsingUtils.setPropertyValue(dynamicRegionFactoryElement, dynamicRegionSupportBuilder, "persistent");
+			ParsingUtils.setPropertyValue(dynamicRegionFactoryElement, dynamicRegionSupportBuilder, "register-interest");
+
+			return dynamicRegionSupportBuilder;
 		}
-		return result;
+
+		return null;
 	}
 
 	private void parseJndiBindings(Element element, BeanDefinitionBuilder builder) {
