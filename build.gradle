@@ -29,9 +29,7 @@ apply plugin: 'idea'
 apply from: "$rootDir/maven.gradle"
 apply plugin: 'docbook-reference'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
-//apply plugin: 'bundlor'
-
-//project.bundlor.bundleSymbolicName = "${bundleSymbolicName}"
+apply plugin: 'bundlor'
 
 if (project.hasProperty('platformVersion')) {
     apply plugin: 'spring-io'
@@ -51,6 +49,10 @@ tasks.withType(Test).all {
     forkEvery = 1
     systemProperties['gemfire.disableShutdownHook'] = 'true'
     systemProperties['org.springframework.data.gemfire.test.GemfireTestRunner.nomock'] = System.getProperty('org.springframework.data.gemfire.test.GemfireTestRunner.nomock')
+}
+
+bundlor {
+	manifestTemplate = file("${projectDir}/template.mf").text
 }
 
 // Common dependencies
