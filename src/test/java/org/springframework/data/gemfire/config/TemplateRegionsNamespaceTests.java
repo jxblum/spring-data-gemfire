@@ -82,6 +82,7 @@ import com.gemstone.gemfire.distributed.Role;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see com.gemstone.gemfire.cache.Cache
  * @see com.gemstone.gemfire.cache.Region
+ * @see com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue
  * @since 1.5.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -99,7 +100,7 @@ public class TemplateRegionsNamespaceTests {
 	private Region<String, Object> templateBasedReplicateRegion;
 
 	@Resource(name = "/TemplateBasedReplicateRegion/TemplateBasedReplicateSubRegion")
-	private Region<Integer, String> templateBasedReplicateSubRegion;
+	private Region<Long, String> templateBasedReplicateSubRegion;
 
 	@Resource(name = "TemplateBasedPartitionRegion")
 	private Region<Date, Object> templateBasedPartitionRegion;
@@ -227,8 +228,7 @@ public class TemplateRegionsNamespaceTests {
 		assertNotNull(region);
 		assertNotNull(region.getAttributes());
 		assertNotNull(region.getAttributes().getPartitionAttributes());
-		assertTrue(
-			region.getAttributes().getPartitionAttributes().getPartitionResolver() instanceof TestPartitionResolver);
+		assertTrue(region.getAttributes().getPartitionAttributes().getPartitionResolver() instanceof TestPartitionResolver);
 		assertEquals(expectedName, region.getAttributes().getPartitionAttributes().getPartitionResolver().toString());
 	}
 
@@ -244,8 +244,8 @@ public class TemplateRegionsNamespaceTests {
 		assertNullEmpty(region.getAttributes().getGatewayHubId());
 		assertFalse(region.getAttributes().getMulticastEnabled());
 		assertNullEmpty(region.getAttributes().getPoolName());
-		assertDefaultExpirationAttributes(region.getAttributes().getRegionTimeToLive());
 		assertDefaultExpirationAttributes(region.getAttributes().getRegionIdleTimeout());
+		assertDefaultExpirationAttributes(region.getAttributes().getRegionTimeToLive());
 	}
 
 	protected void assertDefaultSubscriptionAttributes(final SubscriptionAttributes subscriptionAttributes) {
@@ -254,14 +254,13 @@ public class TemplateRegionsNamespaceTests {
 	}
 
 	protected void assertSubscriptionAttributes(final SubscriptionAttributes subscriptionAttributes,
-												final InterestPolicy expectedInterestPolicy)
-	{
+			final InterestPolicy expectedInterestPolicy) {
 		assertNotNull("The 'SubscriptionAttributes' must not be null!", subscriptionAttributes);
 		assertEquals(expectedInterestPolicy, subscriptionAttributes.getInterestPolicy());
 	}
 
 	protected static void assertEmpty(final Object[] array) {
-		assertTrue((array == null || array.length == 0));
+		assertTrue(array == null || array.length == 0);
 	}
 
 	protected static void assertEmpty(final Iterable<?> collection) {
@@ -276,7 +275,8 @@ public class TemplateRegionsNamespaceTests {
 		assertRegionMetaData(region, expectedRegionName, Region.SEPARATOR + expectedRegionName);
 	}
 
-	protected static void assertRegionMetaData(final Region<?, ?> region, final String expectedRegionName, final String expectedRegionPath) {
+	protected static void assertRegionMetaData(final Region<?, ?> region, final String expectedRegionName,
+			final String expectedRegionPath) {
 		assertNotNull(String.format("The '%1$s' Region was not properly configured and initialized!",
 			expectedRegionName), region);
 		assertEquals(expectedRegionName, region.getName());
@@ -386,12 +386,9 @@ public class TemplateRegionsNamespaceTests {
 		assertRegionMetaData(templateBasedReplicateSubRegion, "TemplateBasedReplicateSubRegion",
 			"/TemplateBasedReplicateRegion/TemplateBasedReplicateSubRegion");
 		assertDefaultRegionAttributes(templateBasedReplicateSubRegion);
-		assertAsyncEventQueues(templateBasedReplicateSubRegion, "TestAsyncEventQueue");
 		assertCacheListeners(templateBasedReplicateSubRegion, "testListener");
-		assertCacheLoader(templateBasedReplicateSubRegion, "A");
-		assertCacheWriter(templateBasedReplicateSubRegion, "B");
-		assertFalse(templateBasedReplicateSubRegion.getAttributes().getCloningEnabled());
-		assertTrue(templateBasedReplicateSubRegion.getAttributes().getConcurrencyChecksEnabled());
+		assertTrue(templateBasedReplicateSubRegion.getAttributes().getCloningEnabled());
+		assertFalse(templateBasedReplicateSubRegion.getAttributes().getConcurrencyChecksEnabled());
 		assertEquals(16, templateBasedReplicateSubRegion.getAttributes().getConcurrencyLevel());
 		assertEquals(DataPolicy.REPLICATE, templateBasedReplicateSubRegion.getAttributes().getDataPolicy());
 		assertFalse(templateBasedReplicateSubRegion.getAttributes().isDiskSynchronous());
@@ -402,15 +399,13 @@ public class TemplateRegionsNamespaceTests {
 			ExpirationAction.DESTROY, 600);
 		assertExpirationAttributes(templateBasedReplicateSubRegion.getAttributes().getEntryTimeToLive(),
 			ExpirationAction.DESTROY, 600);
-		assertGatewaySenders(templateBasedReplicateSubRegion, "TestGatewaySender");
 		assertTrue(templateBasedReplicateSubRegion.getAttributes().getIgnoreJTA());
 		assertFalse(templateBasedReplicateSubRegion.getAttributes().getIndexMaintenanceSynchronous());
 		assertEquals(51, templateBasedReplicateSubRegion.getAttributes().getInitialCapacity());
-		assertEquals(Integer.class, templateBasedReplicateSubRegion.getAttributes().getKeyConstraint());
+		assertEquals(Long.class, templateBasedReplicateSubRegion.getAttributes().getKeyConstraint());
 		assertEquals("0.95", String.valueOf(templateBasedReplicateSubRegion.getAttributes().getLoadFactor()));
 		assertFalse(templateBasedReplicateSubRegion.getAttributes().isLockGrantor());
-		assertMembershipAttributes(templateBasedReplicateSubRegion.getAttributes().getMembershipAttributes(),
-			LossAction.LIMITED_ACCESS, ResumptionAction.NONE, "readWriteNode");
+		assertDefaultMembershipAttributes(templateBasedReplicateSubRegion.getAttributes().getMembershipAttributes());
 		assertNull(templateBasedReplicateSubRegion.getAttributes().getPartitionAttributes());
 		assertEquals(Scope.DISTRIBUTED_NO_ACK, templateBasedReplicateSubRegion.getAttributes().getScope());
 		assertTrue(templateBasedReplicateSubRegion.getAttributes().getStatisticsEnabled());
