@@ -92,35 +92,17 @@ public class GatewayHubNamespaceTest {
 
 		assertNotNull(gateways);
 		assertFalse(gateways.isEmpty());
-		assertEquals(2, gateways.size());
+		assertEquals(1, gateways.size());
 
-		Gateway gatewayOne = gateways.get(0);
+		Gateway gateway = gateways.get(0);
 
-		assertEquals("gateway1", gatewayOne.getId());
-		assertEquals(8, gatewayOne.getConcurrencyLevel());
-		assertEquals(Gateway.OrderPolicy.THREAD, gatewayOne.getOrderPolicy());
-		assertEquals(65536, gatewayOne.getSocketBufferSize());
-		assertEquals(15000, gatewayOne.getSocketReadTimeout());
-		assertNotNull(gatewayOne.getListeners());
-		assertFalse(gatewayOne.getListeners().isEmpty());
-		assertEquals(1, gatewayOne.getListeners().size());
-		assertTrue(gatewayOne.getListeners().get(0) instanceof TestGatewayListener);
+		assertEquals("gateway1", gateway.getId());
+		assertEquals(8, gateway.getConcurrencyLevel());
+		assertEquals(Gateway.OrderPolicy.THREAD, gateway.getOrderPolicy());
+		assertEquals(65536, gateway.getSocketBufferSize());
+		assertEquals(15000, gateway.getSocketReadTimeout());
 
-		GatewayQueueAttributes gatewayQueueAttributes = gatewayOne.getQueueAttributes();
-
-		assertNotNull(gatewayQueueAttributes);
-		assertEquals(99, gatewayQueueAttributes.getAlertThreshold());
-		assertTrue(gatewayQueueAttributes.getBatchConflation());
-		assertEquals(3, gatewayQueueAttributes.getBatchSize());
-		assertEquals(10, gatewayQueueAttributes.getBatchTimeInterval());
-		assertEquals(5, gatewayQueueAttributes.getMaximumQueueMemory());
-		assertFalse(gatewayQueueAttributes.getEnablePersistence());
-
-		Gateway gatewayTwo = gateways.get(1);
-
-		assertEquals("gateway2", gatewayTwo.getId());
-
-		List gatewayEndpoints = gatewayTwo.getEndpoints();
+		List gatewayEndpoints = gateway.getEndpoints();
 
 		assertNotNull(gatewayEndpoints);
 		assertFalse(gatewayEndpoints.isEmpty());
@@ -137,6 +119,23 @@ public class GatewayHubNamespaceTest {
 		assertEquals("endpoint2", gatewayEndpointTwo.getId());
 		assertEquals("localhost", gatewayEndpointTwo.getHost());
 		assertEquals(4321, gatewayEndpointTwo.getPort());
+
+		List<GatewayEventListener> gatewayEventListeners = gateway.getListeners();
+
+		assertNotNull(gatewayEventListeners);
+		assertFalse(gatewayEventListeners.isEmpty());
+		assertEquals(1, gatewayEventListeners.size());
+		assertTrue(gatewayEventListeners.get(0) instanceof TestGatewayListener);
+
+		GatewayQueueAttributes gatewayQueueAttributes = gateway.getQueueAttributes();
+
+		assertNotNull(gatewayQueueAttributes);
+		assertEquals(99, gatewayQueueAttributes.getAlertThreshold());
+		assertTrue(gatewayQueueAttributes.getBatchConflation());
+		assertEquals(3, gatewayQueueAttributes.getBatchSize());
+		assertEquals(10, gatewayQueueAttributes.getBatchTimeInterval());
+		assertEquals(5, gatewayQueueAttributes.getMaximumQueueMemory());
+		assertFalse(gatewayQueueAttributes.getEnablePersistence());
 	}
 
 	public static final class TestGatewayListener implements GatewayEventListener {

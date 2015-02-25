@@ -3088,42 +3088,39 @@ Deprecated as of Gemfire 7
 ]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:choice>
-				<xsd:element name="gateway-endpoint" type="gatewayEndpointType" minOccurs="1" maxOccurs="unbounded"/>
-				<xsd:element name="gateway-listener" minOccurs="1" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation
-							source="com.gemstone.gemfire.cache.util.GatewayEventListener"><![CDATA[
+			<xsd:element name="gateway-endpoint" type="gatewayEndpointType" minOccurs="1" maxOccurs="unbounded"/>
+			<xsd:element name="gateway-listener" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation
+						source="com.gemstone.gemfire.cache.util.GatewayEventListener"><![CDATA[
 An gateway event listener definition for the gateway
-                            ]]></xsd:documentation>
-						<xsd:appinfo>
-							<tool:annotation>
-								<tool:exports type="com.gemstone.gemfire.cache.util.GatewayEventListener"/>
-							</tool:annotation>
-						</xsd:appinfo>
-					</xsd:annotation>
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:any namespace="##other" processContents="skip"
-									 minOccurs="0" maxOccurs="unbounded">
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[
-Inner bean definition of the gateway event listener
-                                        ]]></xsd:documentation>
-								</xsd:annotation>
-							</xsd:any>
-						</xsd:sequence>
-						<xsd:attribute name="ref" type="xsd:string" use="optional">
+						]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation>
+							<tool:exports type="com.gemstone.gemfire.cache.util.GatewayEventListener"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
+Inner bean definition of the gateway event listener
+									]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:any>
+					</xsd:sequence>
+					<xsd:attribute name="ref" type="xsd:string" use="optional">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
 The name of the gateway event listener bean referred by this declaration. Used as a convenience method. If no reference exists,
 use inner bean declarations.
-                                    ]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-					</xsd:complexType>
-				</xsd:element>
-			</xsd:choice>
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
 			<xsd:element name="gateway-queue" type="gatewayQueueType" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 		<xsd:attribute name="gateway-id" type="xsd:string" use="required">

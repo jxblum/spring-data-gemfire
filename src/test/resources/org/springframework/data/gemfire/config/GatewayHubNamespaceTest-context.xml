@@ -27,16 +27,14 @@
 					 port="45123" socket-buffer-size="16384" startup-policy="primary">
 		<gfe:gateway gateway-id="gateway1" concurrency-level="8" order-policy="thread" socket-buffer-size="65536"
 					 socket-read-timeout="15000">
+			<gfe:gateway-endpoint endpoint-id="endpoint1" host="localhost" port="1234"/>
+			<gfe:gateway-endpoint endpoint-id="endpoint2" host="localhost" port="4321"/>
 			<gfe:gateway-listener>
 				<bean class="org.springframework.data.gemfire.config.GatewayHubNamespaceTest.TestGatewayListener"/>
 			</gfe:gateway-listener>
 			<gfe:gateway-queue alert-threshold="99" batch-size="3" batch-time-interval="10"
 							   disk-store-ref="testGatewayQueueDiskStore" enable-batch-conflation="true"
 							   maximum-queue-memory="5" persistent="false"/>
-		</gfe:gateway>
-		<gfe:gateway gateway-id="gateway2">
-			<gfe:gateway-endpoint endpoint-id="endpoint1" host="localhost" port="1234"/>
-			<gfe:gateway-endpoint endpoint-id="endpoint2" host="localhost" port="4321"/>
 		</gfe:gateway>
 	</gfe:gateway-hub>
 
