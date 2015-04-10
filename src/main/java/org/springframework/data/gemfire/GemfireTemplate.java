@@ -29,11 +29,13 @@ import com.gemstone.gemfire.GemFireException;
 import com.gemstone.gemfire.cache.Region;
 import com.gemstone.gemfire.cache.Scope;
 import com.gemstone.gemfire.cache.client.ClientCache;
+import com.gemstone.gemfire.cache.partition.PartitionRegionHelper;
 import com.gemstone.gemfire.cache.query.IndexInvalidException;
 import com.gemstone.gemfire.cache.query.Query;
 import com.gemstone.gemfire.cache.query.QueryInvalidException;
 import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
+import com.gemstone.gemfire.internal.cache.LocalDataSet;
 import com.gemstone.gemfire.internal.cache.LocalRegion;
 
 import org.springframework.dao.DataAccessException;
@@ -423,13 +425,30 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	}
 
 	/* (non-Javadoc) */
-	QueryService queryServiceFrom(Region<?, ?> region) {
-		return region.getRegionService().getQueryService();
+	String poolNameFrom(Region<?, ?> region) {
+		return region.getAttributes().getPoolName();
 	}
 
 	/* (non-Javadoc) */
-	String poolNameFrom(Region<?, ?> region) {
-		return region.getAttributes().getPoolName();
+	QueryService queryServiceFrom(Region<?, ?> region) {
+		return (isLocalDataSet(region) ? getLocalDataSetQueryService(region)
+			: region.getRegionService().getQueryService());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.gemstone.gemfire.cache.Region
+	 * @see com.gemstone.gemfire.internal.cache.LocalDataSet
+	 */
+	boolean isLocalDataSet(Region<?, ?> region) {
+		return (region instanceof LocalDataSet);
+	}
+
+	/* (non-Javadoc) */
+	QueryService getLocalDataSetQueryService(Region<?, ?> region) {
+		//PartitionRegionHelper.getLocalDataForContext();
+		// TODO this won't work
+		return PartitionRegionHelper.getLocalData(region).getRegionService().getQueryService();
 	}
 
 	/*
