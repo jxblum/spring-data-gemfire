@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,7 @@ import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
@@ -71,6 +73,8 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 
 	private static final ApplicationEventMulticaster applicationEventNotifier = new SimpleApplicationEventMulticaster();
 
+	private static final AtomicReference<ClassLoader> beanClassLoaderRef = new AtomicReference<ClassLoader>(null);
+
 	/* package-private */ static volatile ConfigurableApplicationContext applicationContext;
 
 	/* package-private */ static volatile ContextRefreshedEvent contextRefreshedEvent;
@@ -89,6 +93,15 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	public static synchronized ConfigurableApplicationContext getApplicationContext() {
 		Assert.state(applicationContext != null, "The Spring ApplicationContext was not configured and initialized properly!");
 		return applicationContext;
+	}
+
+	public static void setBeanClassLoader(ClassLoader beanClassLoader) {
+		if (applicationContext == null || !applicationContext.isActive()) {
+			beanClassLoaderRef.set(beanClassLoader);
+		}
+		else {
+			throw new IllegalStateException("The Spring ApplicationContext has already been initialized!");
+		}
 	}
 
 	/**
@@ -253,7 +266,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 		Assert.notNull(applicationContext, "The ConfigurableApplicationContext reference must not be null!");
 		applicationContext.addApplicationListener(this);
 		applicationContext.registerShutdownHook();
-		return applicationContext;
+		return setClassLoader(applicationContext);
 	}
 
 	/**
@@ -323,6 +336,16 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 			String[] basePackages) {
 		if (!ObjectUtils.isEmpty(basePackages)) {
 			applicationContext.scan(basePackages);
+		}
+
+		return applicationContext;
+	}
+
+	ConfigurableApplicationContext setClassLoader(ConfigurableApplicationContext applicationContext) {
+		ClassLoader beanClassLoader = beanClassLoaderRef.get();
+
+		if (applicationContext instanceof AbstractApplicationContext && beanClassLoader != null) {
+			((AbstractApplicationContext) applicationContext).setClassLoader(beanClassLoader);
 		}
 
 		return applicationContext;
