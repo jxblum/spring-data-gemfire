@@ -196,7 +196,7 @@ public @interface ClientCacheApplication {
 	int retryAttempts() default PoolFactory.DEFAULT_RETRY_ATTEMPTS;
 
 	/**
-	 * Configures the group that all servers this pool connects to must belong to.
+	 * Configures the group that all servers in which this pool connects to must belong to.
 	 *
 	 * @see com.gemstone.gemfire.cache.client.PoolFactory#DEFAULT_SERVER_GROUP
 	 */

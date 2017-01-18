@@ -17,8 +17,13 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotationMetadata;
@@ -52,6 +57,18 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
     private Integer messageSyncInterval;
     private Integer searchTimeout;
 
+    @Autowired(required = false)
+    private List<PeerCacheConfigurer> peerCacheConfigurers = Collections.emptyList();
+
+    private final PeerCacheConfigurer compositePeerCacheConfigurer = new PeerCacheConfigurer() {
+        @Override
+        public void configure(String beanName, CacheFactoryBean cacheFactoryBean) {
+            for (PeerCacheConfigurer peerCacheConfigurer : nullSafeList(peerCacheConfigurers)) {
+                peerCacheConfigurer.configure(beanName, cacheFactoryBean);
+            }
+        }
+    };
+
     @Bean
     public CacheFactoryBean gemfireCache() {
         CacheFactoryBean gemfireCache = constructCacheFactoryBean();
@@ -63,6 +80,8 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         gemfireCache.setSearchTimeout(searchTimeout());
         gemfireCache.setUseBeanFactoryLocator(useBeanFactoryLocator());
         gemfireCache.setUseClusterConfiguration(useClusterConfiguration());
+
+        this.compositePeerCacheConfigurer.configure("gemfireCache", gemfireCache);
 
         return gemfireCache;
     }

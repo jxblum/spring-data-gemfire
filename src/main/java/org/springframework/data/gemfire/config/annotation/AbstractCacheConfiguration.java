@@ -33,17 +33,11 @@ import com.gemstone.gemfire.cache.TransactionWriter;
 import com.gemstone.gemfire.cache.util.GatewayConflictResolver;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
@@ -51,6 +45,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener;
 import org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor;
@@ -58,7 +53,6 @@ import org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFact
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.MappingPdxSerializer;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -66,25 +60,36 @@ import org.springframework.util.StringUtils;
  * client or peer-based cache instance using Spring's Java-based, Annotation
  * {@link org.springframework.context.annotation.Configuration} support.
  *
- * This class encapsulates configuration settings common to both GemFire peer
- * {@link com.gemstone.gemfire.cache.Cache caches} and
- * {@link com.gemstone.gemfire.cache.client.ClientCache client caches}.
+ * This class encapsulates configuration settings common to both GemFire
+ * {@link com.gemstone.gemfire.cache.Cache peer caches}
+ * and {@link com.gemstone.gemfire.cache.client.ClientCache client caches}.
  *
  * @author John Blum
- * @see org.springframework.beans.factory.BeanClassLoaderAware
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.beans.factory.BeanFactory
- * @see org.springframework.beans.factory.BeanFactoryAware
+ * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.core.convert.ConversionService
  * @see org.springframework.core.io.Resource
  * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
+ * @see org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor
+ * @see org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener
+ * @see org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor
+ * @see org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor
+ * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
+ * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
+ * @see com.gemstone.gemfire.pdx.PdxSerializer
  * @since 1.9.0
  */
 @Configuration
 @SuppressWarnings("unused")
-public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware, BeanFactoryAware, ImportAware {
+public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
 	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
 	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED = new AtomicBoolean(false);
@@ -105,13 +110,9 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	private boolean copyOnRead = DEFAULT_COPY_ON_READ;
 	private boolean useBeanFactoryLocator = DEFAULT_USE_BEAN_FACTORY_LOCATOR;
 
-	private BeanFactory beanFactory;
-
 	private Boolean pdxIgnoreUnreadFields;
 	private Boolean pdxPersistent;
 	private Boolean pdxReadSerialized;
-
-	private ClassLoader beanClassLoader;
 
 	private DynamicRegionSupport dynamicRegionSupport;
 
@@ -141,39 +142,6 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	private String startLocator;
 
 	private TransactionWriter transactionWriter;
-
-	/**
-	 * Determines whether the given {@link Object} has value.  The {@link Object} is valuable
-	 * if it is not {@literal null}.
-	 *
-	 * @param value {@link Object} to evaluate.
-	 * @return a boolean value indicating whether the given {@link Object} has value.
-	 */
-	protected static boolean hasValue(Object value) {
-		return (value != null);
-	}
-
-	/**
-	 * Determines whether the given {@link Number} has value.  The {@link Number} is valuable
-	 * if it is not {@literal null} and is not equal to 0.0d.
-	 *
-	 * @param value {@link Number} to evaluate.
-	 * @return a boolean value indicating whether the given {@link Number} has value.
-	 */
-	protected static boolean hasValue(Number value) {
-		return (value != null && value.doubleValue() != 0.0d);
-	}
-
-	/**
-	 * Determines whether the given {@link String} has value.  The {@link String} is valuable
-	 * if it is not {@literal null} or empty.
-	 *
-	 * @param value {@link String} to evaluate.
-	 * @return a boolean value indicating whether the given {@link String} is valuable.
-	 */
-	protected static boolean hasValue(String value) {
-		return StringUtils.hasText(value);
-	}
 
 	/**
 	 * Returns a {@link Properties} object containing GemFire System properties used to configure the GemFire cache.
@@ -206,45 +174,6 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 		gemfireProperties.add(customGemFireProperties);
 
 		return gemfireProperties.build();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setBeanClassLoader(ClassLoader beanClassLoader) {
-		this.beanClassLoader = beanClassLoader;
-	}
-
-	/**
-	 * Returns a reference to the {@link ClassLoader} use by the Spring {@link BeanFactory} to load classes
-	 * for bean definitions.
-	 *
-	 * @return the {@link ClassLoader} used by the Spring {@link BeanFactory} to load classes for bean definitions.
-	 * @see #setBeanClassLoader(ClassLoader)
-	 */
-	protected ClassLoader beanClassLoader() {
-		return beanClassLoader;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	/**
-	 * Returns a reference to the Spring {@link BeanFactory} in the current application context.
-	 *
-	 * @return a reference to the Spring {@link BeanFactory}.
-	 * @throws IllegalStateException if the Spring {@link BeanFactory} was not properly initialized.
-	 * @see org.springframework.beans.factory.BeanFactory
-	 */
-	protected BeanFactory beanFactory() {
-		Assert.state(this.beanFactory != null, "BeanFactory was not properly initialized");
-		return this.beanFactory;
 	}
 
 	/**
@@ -396,23 +325,65 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	}
 
 	/**
-	 * Registers the given {@link BeanDefinition} with the {@link BeanDefinitionRegistry} using a generated bean name.
+	 * Constructs a new, initialized instance of the {@link CacheFactoryBean} based on the Spring application's
+	 * GemFire cache type (i.e. client or peer) preference specified via annotation.
 	 *
-	 * @param beanDefinition {@link AbstractBeanDefinition} to register.
-	 * @return the given {@link BeanDefinition}.
-	 * @see org.springframework.beans.factory.support.AbstractBeanDefinition
-	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
-	 * @see org.springframework.beans.factory.support.BeanDefinitionReaderUtils
-	 * 	#registerWithGeneratedName(AbstractBeanDefinition, BeanDefinitionRegistry)
-	 * @see #beanFactory()
+	 * @param <T> Class type of the {@link CacheFactoryBean}.
+	 * @return a new instance of an appropriate {@link CacheFactoryBean} given the Spring application's
+	 * GemFire cache type preference  (i.e client or peer) specified with the corresponding annotation
+	 * (e.g. {@link ClientCacheApplication} or {@link PeerCacheApplication});
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.springframework.data.gemfire.CacheFactoryBean
+	 * @see #configureCacheFactoryBean(CacheFactoryBean)
+	 * @see #newCacheFactoryBean()
 	 */
-	protected AbstractBeanDefinition register(AbstractBeanDefinition beanDefinition) {
-		if (beanFactory() instanceof BeanDefinitionRegistry) {
-			BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition,
-				((BeanDefinitionRegistry) beanFactory()));
-		}
+	protected <T extends CacheFactoryBean> T constructCacheFactoryBean() {
+		return configureCacheFactoryBean(this.<T>newCacheFactoryBean());
+	}
 
-		return beanDefinition;
+	/**
+	 * Constructs a new, uninitialized instance of the {@link CacheFactoryBean} based on the Spring application's
+	 * GemFire cache type (i.e. client or peer) preference specified via annotation.
+	 *
+	 * @param <T> Class type of the {@link CacheFactoryBean}.
+	 * @return a new instance of an appropriate {@link CacheFactoryBean} given the Spring application's
+	 * GemFire cache type preference (i.e client or peer) specified with the corresponding annotation
+	 * (e.g. {@link ClientCacheApplication} or {@link PeerCacheApplication}).
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.springframework.data.gemfire.CacheFactoryBean
+	 */
+	protected abstract <T extends CacheFactoryBean> T newCacheFactoryBean();
+
+	/**
+	 * Configures common GemFire cache configuration settings.
+	 *
+	 * @param <T> {@link Class} type of the {@link CacheFactoryBean}.
+	 * @param gemfireCache {@link CacheFactoryBean} instance to configure.
+	 * @return the given {@link CacheFactoryBean} with common configuration settings applied.
+	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
+	 * @see org.springframework.data.gemfire.CacheFactoryBean
+	 */
+	protected <T extends CacheFactoryBean> T configureCacheFactoryBean(T gemfireCache) {
+		gemfireCache.setBeanClassLoader(beanClassLoader());
+		gemfireCache.setBeanFactory(beanFactory());
+		gemfireCache.setCacheXml(cacheXml());
+		gemfireCache.setClose(close());
+		gemfireCache.setCopyOnRead(copyOnRead());
+		gemfireCache.setCriticalHeapPercentage(criticalHeapPercentage());
+		gemfireCache.setDynamicRegionSupport(dynamicRegionSupport());
+		gemfireCache.setEvictionHeapPercentage(evictionHeapPercentage());
+		gemfireCache.setGatewayConflictResolver(gatewayConflictResolver());
+		gemfireCache.setJndiDataSources(jndiDataSources());
+		gemfireCache.setProperties(gemfireProperties());
+		gemfireCache.setPdxDiskStoreName(pdxDiskStoreName());
+		gemfireCache.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields());
+		gemfireCache.setPdxPersistent(pdxPersistent());
+		gemfireCache.setPdxReadSerialized(pdxReadSerialized());
+		gemfireCache.setPdxSerializer(pdxSerializer());
+		gemfireCache.setTransactionListeners(transactionListeners());
+		gemfireCache.setTransactionWriter(transactionWriter());
+
+		return gemfireCache;
 	}
 
 	/**
@@ -509,7 +480,7 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	 * @see #getAnnotationType()
 	 */
 	protected boolean isTypedCacheApplication(Class<? extends Annotation> annotationType,
-		AnnotationMetadata importMetadata) {
+			AnnotationMetadata importMetadata) {
 
 		return (annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName()));
 	}
@@ -548,68 +519,6 @@ public abstract class AbstractCacheConfiguration implements BeanClassLoaderAware
 	protected boolean isClientPeerOrServerCacheApplication(AnnotationMetadata importMetadata) {
 		return (isCacheServerApplication(importMetadata) || isClientCacheApplication(importMetadata)
 			|| isPeerCacheApplication(importMetadata));
-	}
-
-	/**
-	 * Constructs a new, initialized instance of the {@link CacheFactoryBean} based on the Spring application's
-	 * GemFire cache type (i.e. client or peer) preference specified via annotation.
-	 *
-	 * @param <T> Class type of the {@link CacheFactoryBean}.
-	 * @return a new instance of an appropriate {@link CacheFactoryBean} given the Spring application's
-	 * GemFire cache type preference  (i.e client or peer) specified with the corresponding annotation
-	 * (e.g. {@link ClientCacheApplication} or {@link PeerCacheApplication});
-	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 * @see #setCommonCacheConfiguration(CacheFactoryBean)
-	 * @see #newCacheFactoryBean()
-	 */
-	protected <T extends CacheFactoryBean> T constructCacheFactoryBean() {
-		return setCommonCacheConfiguration(this.<T>newCacheFactoryBean());
-	}
-
-	/**
-	 * Constructs a new, uninitialized instance of the {@link CacheFactoryBean} based on the Spring application's
-	 * GemFire cache type (i.e. client or peer) preference specified via annotation.
-	 *
-	 * @param <T> Class type of the {@link CacheFactoryBean}.
-	 * @return a new instance of an appropriate {@link CacheFactoryBean} given the Spring application's
-	 * GemFire cache type preference (i.e client or peer) specified with the corresponding annotation
-	 * (e.g. {@link ClientCacheApplication} or {@link PeerCacheApplication}).
-	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 */
-	protected abstract <T extends CacheFactoryBean> T newCacheFactoryBean();
-
-	/**
-	 * Configures common GemFire cache configuration settings.
-	 *
-	 * @param <T> Class type of the {@link CacheFactoryBean}.
-	 * @param gemfireCache {@link CacheFactoryBean} instance to configure.
-	 * @return the given {@link CacheFactoryBean} after common configuration settings have been applied.
-	 * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 */
-	protected <T extends CacheFactoryBean> T setCommonCacheConfiguration(T gemfireCache) {
-		gemfireCache.setBeanClassLoader(beanClassLoader());
-		gemfireCache.setBeanFactory(beanFactory());
-		gemfireCache.setCacheXml(cacheXml());
-		gemfireCache.setClose(close());
-		gemfireCache.setCopyOnRead(copyOnRead());
-		gemfireCache.setCriticalHeapPercentage(criticalHeapPercentage());
-		gemfireCache.setDynamicRegionSupport(dynamicRegionSupport());
-		gemfireCache.setEvictionHeapPercentage(evictionHeapPercentage());
-		gemfireCache.setGatewayConflictResolver(gatewayConflictResolver());
-		gemfireCache.setJndiDataSources(jndiDataSources());
-		gemfireCache.setProperties(gemfireProperties());
-		gemfireCache.setPdxDiskStoreName(pdxDiskStoreName());
-		gemfireCache.setPdxIgnoreUnreadFields(pdxIgnoreUnreadFields());
-		gemfireCache.setPdxPersistent(pdxPersistent());
-		gemfireCache.setPdxReadSerialized(pdxReadSerialized());
-		gemfireCache.setPdxSerializer(pdxSerializer());
-		gemfireCache.setTransactionListeners(transactionListeners());
-		gemfireCache.setTransactionWriter(transactionWriter());
-
-		return gemfireCache;
 	}
 
 	/* (non-Javadoc) */
