@@ -23,7 +23,7 @@
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
-		<springdata.commons>2.0.0.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>2.0.0.DATACMNS-867-SNAPSHOT</springdata.commons>
 		<spring-shell.version>1.2.0.RELEASE</spring-shell.version>
 	</properties>
 
