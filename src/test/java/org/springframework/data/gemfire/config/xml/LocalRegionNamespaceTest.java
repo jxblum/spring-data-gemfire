@@ -38,7 +38,7 @@ import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
+import org.springframework.data.gemfire.test.mock.context.MockGemFireObjectsApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
@@ -54,7 +54,8 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.config.xml.LocalRegionParser
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations="local-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations="local-ns.xml", initializers = MockGemFireObjectsApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class LocalRegionNamespaceTest {
 
 	@Autowired
@@ -62,6 +63,8 @@ public class LocalRegionNamespaceTest {
 
 	@Test
 	public void testSimpleLocalRegion() throws Exception {
+
+		assertTrue(applicationContext.containsBean("simple"));
 
 		assertTrue(applicationContext.containsBean("simple"));
 
@@ -142,7 +145,9 @@ public class LocalRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
+
 		Cache cache = applicationContext.getBean(Cache.class);
+
 		Region existing = cache.createRegionFactory().create("existing");
 
 		assertTrue(applicationContext.containsBean("lookup"));
@@ -156,6 +161,7 @@ public class LocalRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testLocalPersistent() {
+
 		Region persistentLocalRegion = applicationContext.getBean("persistent", Region.class);
 
 		assertNotNull("The 'persistent' Local Region was not properly configured and initialized!", persistentLocalRegion);
@@ -170,6 +176,7 @@ public class LocalRegionNamespaceTest {
 
 	@Test
 	public void testCompressedLocalRegion() {
+
 		assertTrue(applicationContext.containsBean("Compressed"));
 
 		Region<?, ?> compressed = applicationContext.getBean("Compressed", Region.class);
@@ -207,5 +214,4 @@ public class LocalRegionNamespaceTest {
 			return this.name;
 		}
 	}
-
 }

@@ -40,9 +40,9 @@ import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
+import org.springframework.data.gemfire.test.mock.context.MockGemFireObjectsApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -55,8 +55,9 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
  * @see org.springframework.data.gemfire.config.xml.ReplicatedRegionParser
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="replicated-ns.xml", initializers=GemfireTestApplicationContextInitializer.class)
+@RunWith(SpringRunner.class)
+@ContextConfiguration(locations = "replicated-ns.xml",
+	initializers = MockGemFireObjectsApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ReplicatedRegionNamespaceTest {
 
@@ -171,8 +172,8 @@ public class ReplicatedRegionNamespaceTest {
 	@SuppressWarnings("rawtypes")
 	public void testRegionLookup() throws Exception {
 
-		Cache cache = applicationContext.getBean(Cache.class);
-
+\		Cache cache = context.getBean(Cache.class);
+>
 		Region existing = cache.createRegionFactory().create("existing");
 
 		assertTrue(applicationContext.containsBean("lookup"));
