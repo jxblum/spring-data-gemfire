@@ -260,8 +260,11 @@ public abstract class DelegatingPoolAdapter extends FactoryDefaultsPoolAdapter {
 
 	@Override
 	public int getSubscriptionTimeoutMultiplier() {
+		return 1;
+		/*
 		return Optional.ofNullable(getDelegate()).map(Pool::getSubscriptionTimeoutMultiplier)
 			.orElseGet(super::getSubscriptionTimeoutMultiplier);
+		*/
 	}
 
 	@Override

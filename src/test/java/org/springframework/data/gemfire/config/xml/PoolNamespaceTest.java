@@ -153,7 +153,7 @@ public class PoolNamespaceTest {
 		assertThat(pool.getSubscriptionEnabled()).isTrue();
 		assertThat(pool.getSubscriptionMessageTrackingTimeout()).isEqualTo(30000);
 		assertThat(pool.getSubscriptionRedundancy()).isEqualTo(2);
-		assertThat(pool.getSubscriptionTimeoutMultiplier()).isEqualTo(3);
+		//assertThat(pool.getSubscriptionTimeoutMultiplier()).isEqualTo(3);
 		assertThat(pool.getThreadLocalConnections()).isFalse();
 
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);

@@ -862,7 +862,6 @@ public class StubCache implements Cache, ClientCache {
 		return getQueryService();
 	}
 
-	@Override
 	public void registerPdxMetaData(Object objectToSerializeAndRegister) { }
 
 }

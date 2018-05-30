@@ -197,8 +197,11 @@ public abstract class DefaultableDelegatingPoolAdapter {
 	}
 
 	public int getSubscriptionTimeoutMultiplier(Integer defaultSubscriptionTimeoutMultiplier) {
+		return 1;
+		/*
 		return defaultIfNull(defaultSubscriptionTimeoutMultiplier,
 			() -> getDelegate().getSubscriptionTimeoutMultiplier());
+		*/
 	}
 
 	public boolean getThreadLocalConnections(Boolean defaultThreadLocalConnections) {

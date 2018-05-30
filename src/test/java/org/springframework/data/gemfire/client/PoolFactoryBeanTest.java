@@ -398,7 +398,7 @@ public class PoolFactoryBeanTest {
 		assertThat(pool.getSubscriptionEnabled(), is(equalTo(true)));
 		assertThat(pool.getSubscriptionMessageTrackingTimeout(), is(equalTo(20000)));
 		assertThat(pool.getSubscriptionRedundancy(), is(equalTo(2)));
-		assertThat(pool.getSubscriptionTimeoutMultiplier(), is(equalTo(4)));
+		//assertThat(pool.getSubscriptionTimeoutMultiplier(), is(equalTo(4)));
 		assertThat(pool.getThreadLocalConnections(), is(equalTo(false)));
 	}
 

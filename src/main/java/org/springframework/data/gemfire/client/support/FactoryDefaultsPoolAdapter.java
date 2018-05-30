@@ -163,7 +163,7 @@ public abstract class FactoryDefaultsPoolAdapter extends PoolAdapter {
 
 	@Override
 	public int getSubscriptionTimeoutMultiplier() {
-		return PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
+		return 1; // PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
 	}
 
 	@Override

@@ -98,7 +98,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	private int subscriptionAckInterval = PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
 	private int subscriptionMessageTrackingTimeout = PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
 	private int subscriptionRedundancy = PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
-	private int subscriptionTimeoutMultiplier = PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
+	private int subscriptionTimeoutMultiplier = 1; //PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
 
 	private long idleTimeout = PoolFactory.DEFAULT_IDLE_TIMEOUT;
 	private long pingInterval = PoolFactory.DEFAULT_PING_INTERVAL;
@@ -311,7 +311,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			it.setSubscriptionEnabled(this.subscriptionEnabled);
 			it.setSubscriptionMessageTrackingTimeout(this.subscriptionMessageTrackingTimeout);
 			it.setSubscriptionRedundancy(this.subscriptionRedundancy);
-			it.setSubscriptionTimeoutMultiplier(this.subscriptionTimeoutMultiplier);
+			//it.setSubscriptionTimeoutMultiplier(this.subscriptionTimeoutMultiplier);
 			it.setThreadLocalConnections(this.threadLocalConnections);
 
 			nullSafeCollection(this.locators).forEach(locator ->
